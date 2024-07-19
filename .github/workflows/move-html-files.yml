@@ -24,11 +24,11 @@ jobs:
         find . -maxdepth 1 -name "*.html" -exec mv {} public/ \;
 
     - name: Commit and push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.MV_SINGLE_FILE }}
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git add .
         git commit -m "Move HTML files to public directory"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        git push https://x-access-token:${{ secrets.MV_SINGLE_FILE }}@github.com/cdxiaodong/SingleFile-Archives.git
