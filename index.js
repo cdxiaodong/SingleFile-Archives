@@ -7,7 +7,9 @@ const app = express();
 
 // 读取当前目录下的所有 HTML 文件
 function getHtmlFiles() {
-    return fs.readdirSync('.').filter(file => file.endsWith('.html') && file !== 'index.html');
+    const files = fs.readdirSync('.').filter(file => file.endsWith('.html') && file !== 'index.html');
+    console.log('HTML Files:', files); // 调试日志
+    return files;
 }
 
 // 提取 HTML 文件的标题
@@ -125,7 +127,8 @@ app.get('/', (req, res) => {
 
 // 处理HTML文件请求
 app.get('/:fileName', (req, res) => {
-    const filePath = path.join('.', decodeURIComponent(req.params.fileName));
+    const filePath = path.join(__dirname, decodeURIComponent(req.params.fileName));
+    console.log('Requesting file:', filePath); // 调试日志
     if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
         res.sendFile(path.resolve(filePath));
     } else {
@@ -133,4 +136,7 @@ app.get('/:fileName', (req, res) => {
     }
 });
 
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
 module.exports = app;
