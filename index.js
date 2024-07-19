@@ -125,6 +125,12 @@ app.get('/', (req, res) => {
     res.send(generateIndexHtml());
 });
 
+function listFiles() {
+    const files = fs.readdirSync(currentDir);
+    console.log('All Files:', files); // 调试日志
+    return files;
+}
+
 // 处理HTML文件请求
 app.get('/:fileName', (req, res) => {
     const filePath = path.join(__dirname, decodeURIComponent(req.params.fileName));
@@ -137,4 +143,5 @@ app.get('/:fileName', (req, res) => {
 });
 
 listFiles();
+
 module.exports = app;
