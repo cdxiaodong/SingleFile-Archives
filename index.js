@@ -4,10 +4,11 @@ const express = require('express');
 const { JSDOM } = require('jsdom');
 
 const app = express();
+const currentDir = __dirname;
 
 // 读取当前目录下的所有 HTML 文件
 function getHtmlFiles() {
-    const files = fs.readdirSync('.').filter(file => file.endsWith('.html') && file !== 'index.html');
+    const files = fs.readdirSync(currentDir).filter(file => file.endsWith('.html') && file !== 'index.html');
     console.log('HTML Files:', files); // 调试日志
     return files;
 }
@@ -94,7 +95,7 @@ function generateIndexHtml() {
     `;
 
     htmlFiles.forEach(file => {
-        const title = getTitle(file);
+        const title = getTitle(path.join(currentDir, file));
         const encodedFile = encodeURIComponent(file);  // 对文件名进行URL编码
         indexContent += `<li class="list-group-item"><a href="${encodedFile}">${title}</a></li>\n`;
     });
@@ -120,20 +121,21 @@ function generateIndexHtml() {
     return indexContent;
 }
 
-// 处理根路径请求
-app.get('/', (req, res) => {
-    res.send(generateIndexHtml());
-});
-
+// 列出当前目录下的所有文件和目录
 function listFiles() {
     const files = fs.readdirSync(currentDir);
     console.log('All Files:', files); // 调试日志
     return files;
 }
 
+// 处理根路径请求
+app.get('/', (req, res) => {
+    res.send(generateIndexHtml());
+});
+
 // 处理HTML文件请求
 app.get('/:fileName', (req, res) => {
-    const filePath = path.join(__dirname, decodeURIComponent(req.params.fileName));
+    const filePath = path.join(currentDir, decodeURIComponent(req.params.fileName));
     console.log('Requesting file:', filePath); // 调试日志
     if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
         res.sendFile(path.resolve(filePath));
@@ -142,6 +144,7 @@ app.get('/:fileName', (req, res) => {
     }
 });
 
+// 在服务器启动时列出当前目录下的所有文件
 listFiles();
 
 module.exports = app;
