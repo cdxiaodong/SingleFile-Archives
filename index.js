@@ -9,6 +9,9 @@ const currentDir = __dirname;
 // 读取当前目录下的所有 HTML 文件
 function getHtmlFiles() {
     const files = fs.readdirSync(currentDir).filter(file => file.endsWith('.html') && file !== 'index.html');
+    console.log('currentDir:', currentDir); 
+    const ALL_files = fs.readdirSync(currentDir);
+    console.log('All Files:', ALL_files); // 调试日志
     console.log('HTML Files:', files); // 调试日志
     return files;
 }
@@ -121,12 +124,8 @@ function generateIndexHtml() {
     return indexContent;
 }
 
-// 列出当前目录下的所有文件和目录
-function listFiles() {
-    const files = fs.readdirSync(currentDir);
-    console.log('All Files:', files); // 调试日志
-    return files;
-}
+
+
 
 // 处理根路径请求
 app.get('/', (req, res) => {
@@ -144,7 +143,6 @@ app.get('/:fileName', (req, res) => {
     }
 });
 
-// 在服务器启动时列出当前目录下的所有文件
-listFiles();
+
 
 module.exports = app;
