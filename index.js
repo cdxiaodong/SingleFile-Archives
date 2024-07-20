@@ -1,10 +1,13 @@
 const axios = require('axios');
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const githubRepo = 'cdxiaodong/SingleFile-Archives';
 const githubToken = process.env.GITHUB_TOKEN;
+const currentDir = __dirname;
 
 // 从GitHub API获取HTML文件列表
 async function getHtmlFilesFromGithub() {
@@ -15,7 +18,6 @@ async function getHtmlFilesFromGithub() {
             }
         });
         const files = response.data.filter(file => file.name.endsWith('.html'));
-        console.log('HTML Files from GitHub:', files.map(file => file.name)); // 调试日志
         return files.map(file => file.name);
     } catch (error) {
         console.error('Error fetching files from GitHub:', error);
@@ -99,7 +101,7 @@ async function generateIndexHtml() {
     `;
 
     for (const file of htmlFiles) {
-        const encodedFile = encodeURIComponent(file);  // 对文件名进行URL编码
+        const encodedFile = encodeURIComponent(file);
         indexContent += `<li class="list-group-item"><a href="/${encodedFile}" target="_blank">${file}</a></li>\n`;
     }
 
@@ -130,10 +132,21 @@ app.get('/', async (req, res) => {
     res.send(indexHtml);
 });
 
-// 提供静态文件服务
-app.use(express.static(__dirname));
+// 提供HTML文件服务
+app.get('/:fileName', (req, res) => {
+    const filePath = path.join(currentDir, decodeURIComponent(req.params.fileName));
+    console.log('Requesting file:', filePath); // 调试日志
+    if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
+        res.sendFile(path.resolve(filePath));
+    } else {
+        res.status(404).send('404 Not Found');
+    }
+});
 
 // 启动服务器
-
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
 
 module.exports = app;
