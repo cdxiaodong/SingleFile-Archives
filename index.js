@@ -135,10 +135,10 @@ app.get('/', async (req, res) => {
 // 提供文件服务
 app.get('/:fileName', (req, res) => {
     const fileName = decodeURIComponent(req.params.fileName);
-    const filePath = path.join(currentDir, fileName);
+    const filePath = `./${fileName}`;
     console.log('Requesting file:', filePath); // 调试日志
     if (fs.existsSync(filePath)) {
-        res.sendFile(filePath);
+        res.sendFile(path.resolve(filePath));
     } else {
         res.status(404).send('404 Not Found');
     }
