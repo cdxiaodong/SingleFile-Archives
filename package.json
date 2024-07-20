@@ -1,17 +1,14 @@
 {
-  "name": "html-index-server",
+  "name": "my-favorite-article",
   "version": "1.0.0",
-  "description": "A simple Node.js server to serve an index of HTML files.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.17.1",
-    "jsdom": "^16.4.0"
-  },
-  "engines": {
-    "node": ">=12.0.0"
+    "axios": "^0.21.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
   },
   "author": "CDxiaodong",
   "license": "MIT"
