@@ -137,7 +137,7 @@ app.get('/:fileName', (req, res) => {
     const filePath = path.join(currentDir, decodeURIComponent(req.params.fileName));
     console.log('Requesting file:', filePath); // 调试日志
     if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
-        res.sendFile(path.resolve(filePath));
+        res.sendFile(filePath);
     } else {
         res.status(404).send('404 Not Found');
     }
