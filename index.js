@@ -133,7 +133,15 @@ app.get('/', async (req, res) => {
 });
 
 // 提供HTML文件服务
-
+app.get('/:fileName', (req, res) => {
+    const filePath = path.join(currentDir, decodeURIComponent(req.params.fileName));
+    console.log('Requesting file:', filePath); // 调试日志
+    if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
+        res.sendFile(filePath);
+    } else {
+        res.status(404).send('404 Not Found');
+    }
+});
 
 // 启动服务器
 const port = process.env.PORT || 3000;
