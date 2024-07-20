@@ -1,32 +1,33 @@
-const fs = require('fs');
-const path = require('path');
+const axios = require('axios');
 const express = require('express');
-const { JSDOM } = require('jsdom');
+require('dotenv').config();
 
 const app = express();
-const currentDir = __dirname;
+const githubRepo = 'cdxiaodong/SingleFile-Archives';
+const githubToken = process.env.GITHUB_TOKEN;
 
-// 读取当前目录下的所有 HTML 文件
-function getHtmlFiles() {
-    const files = fs.readdirSync(currentDir).filter(file => file.endsWith('.html') && file !== 'index.html');
-    console.log('currentDir:', currentDir); 
-    const ALL_files = fs.readdirSync(currentDir);
-    console.log('All Files:', ALL_files); // 调试日志
-    console.log('HTML Files:', files); // 调试日志
-    return files;
+// 从GitHub API获取HTML文件列表
+async function getHtmlFilesFromGithub() {
+    try {
+        const response = await axios.get(`https://api.github.com/repos/${githubRepo}/contents`, {
+            headers: {
+                Authorization: `token ${githubToken}`
+            }
+        });
+        const files = response.data.filter(file => file.name.endsWith('.html'));
+        console.log('HTML Files from GitHub:', files.map(file => file.name)); // 调试日志
+        return files.map(file => file.name);
+    } catch (error) {
+        console.error('Error fetching files from GitHub:', error);
+        return [];
+    }
 }
 
-// 提取 HTML 文件的标题
-function getTitle(filePath) {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const dom = new JSDOM(content);
-    const title = dom.window.document.querySelector('title');
-    return title ? title.textContent : 'No Title';
-}
+// 创建并返回index.html的内容
+async function generateIndexHtml() {
+    const htmlFiles = await getHtmlFilesFromGithub();
+    if (!htmlFiles.length) return '<h1>Error fetching GitHub repo data</h1>';
 
-// 创建并返回 index.html 的内容
-function generateIndexHtml() {
-    const htmlFiles = getHtmlFiles();
     let indexContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -97,11 +98,10 @@ function generateIndexHtml() {
                     <ul class="list-group">
     `;
 
-    htmlFiles.forEach(file => {
-        const title = getTitle(path.join(currentDir, file));
+    for (const file of htmlFiles) {
         const encodedFile = encodeURIComponent(file);  // 对文件名进行URL编码
-        indexContent += `<li class="list-group-item"><a href="${encodedFile}">${title}</a></li>\n`;
-    });
+        indexContent += `<li class="list-group-item"><a href="/${encodedFile}" target="_blank">${file}</a></li>\n`;
+    }
 
     indexContent += `
                     </ul>
@@ -124,25 +124,16 @@ function generateIndexHtml() {
     return indexContent;
 }
 
-
-
-
 // 处理根路径请求
-app.get('/', (req, res) => {
-    res.send(generateIndexHtml());
+app.get('/', async (req, res) => {
+    const indexHtml = await generateIndexHtml();
+    res.send(indexHtml);
 });
 
-// 处理HTML文件请求
-app.get('/:fileName', (req, res) => {
-    const filePath = path.join(currentDir, decodeURIComponent(req.params.fileName));
-    console.log('Requesting file:', filePath); // 调试日志
-    if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
-        res.sendFile(path.resolve(filePath));
-    } else {
-        res.status(404).send('404 Not Found');
-    }
-});
+// 提供静态文件服务
+app.use(express.static(__dirname));
 
+// 启动服务器
 
 
 module.exports = app;
