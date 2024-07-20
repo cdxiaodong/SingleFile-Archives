@@ -132,11 +132,12 @@ app.get('/', async (req, res) => {
     res.send(indexHtml);
 });
 
-// 提供HTML文件服务
+// 提供文件服务
 app.get('/:fileName', (req, res) => {
-    const filePath = path.join(currentDir, decodeURIComponent(req.params.fileName));
+    const fileName = decodeURIComponent(req.params.fileName);
+    const filePath = path.join(currentDir, fileName);
     console.log('Requesting file:', filePath); // 调试日志
-    if (fs.existsSync(filePath) && filePath.endsWith('.html')) {
+    if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
         res.status(404).send('404 Not Found');
