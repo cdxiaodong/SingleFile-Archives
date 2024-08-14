@@ -85,8 +85,8 @@ async function generateIndexHtml() {
                     <div class="sidebar">
                         <h5>Navigation</h5>
                         <ul class="list-group">
-                            <li class="list-group-item"><a href="#">Home</a></li>
-                            <li class="list-group-item"><a href="#">Explore</a></li>
+                            <li class="list-group-item"><a href="https://www.cdxiaodong.life">Home</a></li>
+                            <li class="list-group-item"><a href="https://github.com/cdxiaodong">Github</a></li>
                             <li class="list-group-item"><a href="#">Notifications</a></li>
                             <li class="list-group-item"><a href="#">Messages</a></li>
                             <li class="list-group-item"><a href="#">Bookmarks</a></li>
