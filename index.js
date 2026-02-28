@@ -9,7 +9,51 @@ const githubRepo = 'cdxiaodong/SingleFile-Archives';
 const githubToken = process.env.GITHUB_TOKEN;
 const currentDir = __dirname;
 
-// 从GitHub API获取HTML文件列表
+// 解析文件名中的时间戳，兼容多种格式
+function extractTimeFromFilename(filename) {
+    const match = filename.match(/\(([^)]+)\)\.html$/i);
+    if (!match) return 0; // 没有时间的文件排在最后
+    
+    const d = match[1];
+    // 提取所有的数字块
+    const parts = d.match(/(\d+)/g);
+    const isPM = /PM/i.test(d);
+    const isAM = /AM/i.test(d);
+    
+    if (parts && parts.length >= 6) {
+        let year, month, day, hour, min, sec;
+        
+        // 格式1: YYYY_MM_DD HH_MM_SS (第一位是4位数的年份)
+        if (parts[0].length === 4) {
+            year = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10) - 1; // JS月份从0开始
+            day = parseInt(parts[2], 10);
+            hour = parseInt(parts[3], 10);
+            min = parseInt(parts[4], 10);
+            sec = parseInt(parts[5], 10);
+        } 
+        // 格式2: M_D_YYYY H_MM_SS (第三位是4位数的年份)
+        else if (parts[2].length === 4) {
+            month = parseInt(parts[0], 10) - 1;
+            day = parseInt(parts[1], 10);
+            year = parseInt(parts[2], 10);
+            hour = parseInt(parts[3], 10);
+            min = parseInt(parts[4], 10);
+            sec = parseInt(parts[5], 10);
+        } else {
+            return 0;
+        }
+
+        // 处理 AM/PM 的12小时制逻辑
+        if (isPM && hour < 12) hour += 12;
+        if (isAM && hour === 12) hour = 0;
+
+        return new Date(year, month, day, hour, min, sec).getTime();
+    }
+    return 0;
+}
+
+// 从GitHub API获取HTML文件列表并排序
 async function getHtmlFilesFromGithub() {
     try {
         const response = await axios.get(`https://api.github.com/repos/${githubRepo}/contents`, {
@@ -17,8 +61,12 @@ async function getHtmlFilesFromGithub() {
                 Authorization: `token ${githubToken}`
             }
         });
-        const files = response.data.filter(file => file.name.endsWith('.html'));
-        return files.map(file => file.name);
+        
+        return response.data
+            .filter(file => file.name.endsWith('.html'))
+            .map(file => file.name)
+            .sort((a, b) => extractTimeFromFilename(b) - extractTimeFromFilename(a)); // 降序排列，最新的在前
+            
     } catch (error) {
         console.error('Error fetching files from GitHub:', error);
         return [];
@@ -143,7 +191,5 @@ app.get('/:fileName', (req, res) => {
         res.status(404).send('404 Not Found');
     }
 });
-
-
 
 module.exports = app;
